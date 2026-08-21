@@ -1,6 +1,4 @@
-const { calculateFee, SELECTABLE_BANDS_GHZ, BANDWIDTH_OPTIONS } = require("../lib/pricing");
-
-const VALID_BANDWIDTHS = BANDWIDTH_OPTIONS.map((b) => b.mhz);
+const { calculateFee, SELECTABLE_BANDS_GHZ, bandwidthOptionsForBand } = require("../lib/pricing");
 
 function parseCoord(raw) {
   if (!raw || typeof raw !== "object") return null;
@@ -40,8 +38,9 @@ module.exports = (req, res) => {
     res.status(400).json({ error: "Invalid frequency band." });
     return;
   }
-  if (!VALID_BANDWIDTHS.includes(bandwidthMHz)) {
-    res.status(400).json({ error: "Invalid bandwidth selection." });
+  const validBandwidths = bandwidthOptionsForBand(bandGHz).map((b) => b.mhz);
+  if (!validBandwidths.includes(bandwidthMHz)) {
+    res.status(400).json({ error: "That bandwidth isn't a valid channel width for the selected band." });
     return;
   }
   if (!siteA || !siteB) {
