@@ -234,7 +234,7 @@ body{
 }
 .advanced summary::-webkit-details-marker{ display:none; }
 .advanced summary::before{
-  content:"▸";
+  content:"‚ñ∏";
   transition:transform .15s ease;
   font-size:12px;
 }
@@ -410,12 +410,12 @@ a.inline:hover{ border-bottom-color:rgba(46,139,255,.65); }
 
   <section class="brand-block">
     <div class="brand">WISP<span>COM</span></div>
-    <div class="tagline">Regulation – Simplified.</div>
+    <div class="tagline">Regulation ‚Äì Simplified.</div>
     <span class="eyebrow">Free Tool</span>
     <h1 class="page-title">ICASA Spectrum Licence Fee Calculator</h1>
     <p class="page-sub">
       Get an instant estimate of your annual ICASA radio frequency spectrum licence fee
-      for a point-to-point microwave link — no jargon, no spreadsheet required.
+      for a point-to-point microwave link ‚Äî no jargon, no spreadsheet required.
     </p>
   </section>
 
@@ -428,33 +428,42 @@ a.inline:hover{ border-bottom-color:rgba(46,139,255,.65); }
         <div class="field">
           <label for="bandGHz">Frequency band</label>
           <select id="bandGHz" name="bandGHz" required>
-            <option value="" disabled selected>Select a band…</option>
+            <option value="" disabled selected>Select a band‚Ä¶</option>
           </select>
         </div>
 
         <div class="field">
-          <label for="bandwidthMHz">Bandwidth / channel width (MHz)</label>
-          <input type="number" id="bandwidthMHz" name="bandwidthMHz" min="1" step="0.1" placeholder="e.g. 28" required>
+          <label for="bandwidthMHz">Bandwidth / channel width</label>
+          <select id="bandwidthMHz" name="bandwidthMHz" required>
+            <option value="" disabled selected>Select a bandwidth‚Ä¶</option>
+          </select>
         </div>
 
         <div class="field">
-          <label for="distanceKm">Link distance / hop length (km)</label>
-          <input type="number" id="distanceKm" name="distanceKm" min="0.01" step="0.001" placeholder="e.g. 9.7" required>
-          <small>Straight-line distance between the two tower sites.</small>
+          <label for="siteA">Site A ‚Äî GPS coordinates</label>
+          <input type="text" id="siteA" name="siteA" placeholder="e.g. -26.2041, 28.0473" required>
         </div>
 
         <div class="field">
-          <label>Area</label>
-          <div class="area-toggle">
-            <label><input type="radio" name="area" value="metro" checked> Metro (Gauteng / Cape Town / Durban)</label>
-            <label><input type="radio" name="area" value="rural"> Rural / everywhere else</label>
-          </div>
+          <label for="siteB">Site B ‚Äî GPS coordinates</label>
+          <input type="text" id="siteB" name="siteB" placeholder="e.g. -25.7479, 28.2293" required>
         </div>
       </div>
+      <small style="display:block;margin-top:4px;color:var(--muted);">
+        Decimal degrees, latitude then longitude ‚Äî the format Google Maps shows when you right-click a point and copy the coordinates. Distance and area (metro/rural) are worked out automatically from these.
+      </small>
 
       <details class="advanced" style="margin-top:22px;">
         <summary>Advanced options (most links use the defaults)</summary>
         <div class="advanced-body">
+          <div class="field">
+            <label for="areaOverride">Area</label>
+            <select id="areaOverride" name="areaOverride">
+              <option value="" selected>Auto-detect from GPS coordinates (default)</option>
+              <option value="metro">Force Metro (Gauteng / Cape Town / Durban)</option>
+              <option value="rural">Force Rural / everywhere else</option>
+            </select>
+          </div>
           <div class="field">
             <label for="congestion">Congestion</label>
             <select id="congestion" name="congestion">
@@ -512,7 +521,7 @@ a.inline:hover{ border-bottom-color:rgba(46,139,255,.65); }
       <div>
         <h4>WISP Compliance (Pty) Ltd</h4>
         <p>WISPCOM is a telecommunications compliance specialist serving South African WISPs and licensed network operators.</p>
-        <small class="note" style="display:block;margin-top:10px;color:rgba(156,163,175,.82);font-size:13px;">Regulation – Simplified.</small>
+        <small class="note" style="display:block;margin-top:10px;color:rgba(156,163,175,.82);font-size:13px;">Regulation ‚Äì Simplified.</small>
       </div>
       <div>
         <h4>Contact</h4>
@@ -531,7 +540,7 @@ a.inline:hover{ border-bottom-color:rgba(46,139,255,.65); }
       </div>
     </div>
     <div class="footer-bottom">
-      © 2026 WISP Compliance (Pty) Ltd. All rights reserved. This calculator provides estimates only and does not constitute a firm quote or legal advice.
+      ¬© 2026 WISP Compliance (Pty) Ltd. All rights reserved. This calculator provides estimates only and does not constitute a firm quote or legal advice.
     </div>
   </footer>
 
@@ -547,6 +556,25 @@ BANDS.forEach(function(g){
   bandSelect.appendChild(opt);
 });
 
+// Mirrors lib/pricing.js BANDWIDTH_OPTIONS ‚Äî display only (the fee formula
+// itself always runs server-side). Keep these two lists in sync.
+const BANDWIDTHS = [
+  { mhz: 7, estMbps: 50 },
+  { mhz: 14, estMbps: 100 },
+  { mhz: 28, estMbps: 200 },
+  { mhz: 40, estMbps: 300 },
+  { mhz: 55, estMbps: 400 },
+  { mhz: 56, estMbps: 400 },
+  { mhz: 110, estMbps: 800 },
+];
+const bandwidthSelect = document.getElementById('bandwidthMHz');
+BANDWIDTHS.forEach(function(b){
+  const opt = document.createElement('option');
+  opt.value = b.mhz;
+  opt.textContent = b.mhz + ' MHz ‚Äî up to ~' + b.estMbps + ' Mbps';
+  bandwidthSelect.appendChild(opt);
+});
+
 const form = document.getElementById('calc-form');
 const errorBox = document.getElementById('error-box');
 const result = document.getElementById('result');
@@ -558,18 +586,41 @@ function formatRand(n){
   return 'R' + n.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+const COORD_RE = /^\s*(-?\d+(?:\.\d+)?)\s*[,\s]\s*(-?\d+(?:\.\d+)?)\s*$/;
+
+function parseCoordInput(value){
+  const m = COORD_RE.exec(value || '');
+  if (!m) return null;
+  const lat = Number(m[1]);
+  const lon = Number(m[2]);
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+  return { lat: lat, lon: lon };
+}
+
 form.addEventListener('submit', async function(e){
   e.preventDefault();
   errorBox.style.display = 'none';
   result.style.display = 'none';
-  calcBtn.disabled = true;
-  calcBtn.textContent = 'Calculating…';
 
+  const siteA = parseCoordInput(document.getElementById('siteA').value);
+  const siteB = parseCoordInput(document.getElementById('siteB').value);
+
+  if (!siteA || !siteB) {
+    errorBox.textContent = 'Enter GPS coordinates for both sites as "latitude, longitude" (e.g. -26.2041, 28.0473).';
+    errorBox.style.display = 'block';
+    return;
+  }
+
+  calcBtn.disabled = true;
+  calcBtn.textContent = 'Calculating‚Ä¶';
+
+  const areaOverrideValue = document.getElementById('areaOverride').value;
   const payload = {
     bandGHz: Number(document.getElementById('bandGHz').value),
     bandwidthMHz: Number(document.getElementById('bandwidthMHz').value),
-    distanceKm: Number(document.getElementById('distanceKm').value),
-    area: form.querySelector('input[name="area"]:checked').value,
+    siteA: siteA,
+    siteB: siteB,
+    areaOverride: areaOverrideValue || null,
     congestion: document.getElementById('congestion').value,
     sharing: document.getElementById('sharing').value,
     directionality: document.getElementById('directionality').value,
@@ -591,11 +642,17 @@ form.addEventListener('submit', async function(e){
 
     resultAmount.textContent = formatRand(data.fee) + ' / year';
 
+    const areaLabel = data.assumptions.area === 'metro'
+      ? 'Metro' + (data.assumptions.areaRegion ? ' (' + data.assumptions.areaRegion + ')' : '')
+      : 'Rural / everywhere else';
+
     const rows = [
       ['Frequency band', payload.bandGHz + ' GHz'],
       ['Bandwidth', payload.bandwidthMHz + ' MHz'],
-      ['Link distance', payload.distanceKm + ' km'],
-      ['Area', payload.area === 'metro' ? 'Metro (Gauteng / Cape Town / Durban)' : 'Rural / everywhere else'],
+      ['Site A', siteA.lat + ', ' + siteA.lon],
+      ['Site B', siteB.lat + ', ' + siteB.lon],
+      ['Calculated distance', data.assumptions.distanceKm + ' km'],
+      ['Area', areaLabel + (data.assumptions.areaAutoDetected ? ' (auto-detected)' : ' (manually set)')],
       ['Congestion', payload.congestion === 'congested' ? 'High-demand / congested' : 'Not congested'],
       ['Spectrum use', payload.sharing === 'shared' ? 'Shared' : 'Exclusive'],
       ['Directionality', payload.directionality === 'unidirectional' ? 'Unidirectional' : 'Bidirectional'],
