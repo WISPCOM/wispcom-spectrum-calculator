@@ -556,23 +556,42 @@ BANDS.forEach(function(g){
   bandSelect.appendChild(opt);
 });
 
-// Mirrors lib/pricing.js BANDWIDTH_OPTIONS — display only (the fee formula
-// itself always runs server-side). Keep these two lists in sync.
-const BANDWIDTHS = [
+// Mirrors lib/pricing.js STANDARD_BANDWIDTHS / WIDE_BANDWIDTHS_17_18_GHZ —
+// display only (the fee formula itself always runs server-side, and
+// api/calculate.js validates independently). Keep these in sync.
+const STANDARD_BANDWIDTHS = [
   { mhz: 7, estMbps: 50 },
   { mhz: 14, estMbps: 100 },
   { mhz: 28, estMbps: 200 },
-  { mhz: 40, estMbps: 300 },
-  { mhz: 55, estMbps: 400 },
   { mhz: 56, estMbps: 400 },
-  { mhz: 110, estMbps: 800 },
 ];
+const WIDE_BANDWIDTHS_17_18 = [
+  { mhz: 27.5, estMbps: 195 },
+  { mhz: 55, estMbps: 390 },
+  { mhz: 110, estMbps: 785 },
+];
+function bandwidthsForBand(ghz){
+  return (ghz === 17 || ghz === 18) ? WIDE_BANDWIDTHS_17_18 : STANDARD_BANDWIDTHS;
+}
 const bandwidthSelect = document.getElementById('bandwidthMHz');
-BANDWIDTHS.forEach(function(b){
-  const opt = document.createElement('option');
-  opt.value = b.mhz;
-  opt.textContent = b.mhz + ' MHz — up to ~' + b.estMbps + ' Mbps';
-  bandwidthSelect.appendChild(opt);
+function populateBandwidths(ghz){
+  bandwidthSelect.innerHTML = '';
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.disabled = true;
+  placeholder.selected = true;
+  placeholder.textContent = ghz ? 'Select a bandwidth…' : 'Select a frequency band first…';
+  bandwidthSelect.appendChild(placeholder);
+  bandwidthsForBand(ghz).forEach(function(b){
+    const opt = document.createElement('option');
+    opt.value = b.mhz;
+    opt.textContent = b.mhz + ' MHz — up to ~' + b.estMbps + ' Mbps';
+    bandwidthSelect.appendChild(opt);
+  });
+}
+populateBandwidths(null);
+bandSelect.addEventListener('change', function(){
+  populateBandwidths(Number(bandSelect.value));
 });
 
 const form = document.getElementById('calc-form');
