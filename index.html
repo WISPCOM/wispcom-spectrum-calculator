@@ -234,7 +234,7 @@ body{
 }
 .advanced summary::-webkit-details-marker{ display:none; }
 .advanced summary::before{
-  content:"‚ñ∏";
+  content:"▸";
   transition:transform .15s ease;
   font-size:12px;
 }
@@ -410,12 +410,12 @@ a.inline:hover{ border-bottom-color:rgba(46,139,255,.65); }
 
   <section class="brand-block">
     <div class="brand">WISP<span>COM</span></div>
-    <div class="tagline">Regulation ‚Äì Simplified.</div>
+    <div class="tagline">Regulation – Simplified.</div>
     <span class="eyebrow">Free Tool</span>
     <h1 class="page-title">ICASA Spectrum Licence Fee Calculator</h1>
     <p class="page-sub">
       Get an instant estimate of your annual ICASA radio frequency spectrum licence fee
-      for a point-to-point microwave link ‚Äî no jargon, no spreadsheet required.
+      for a point-to-point microwave link — no jargon, no spreadsheet required.
     </p>
   </section>
 
@@ -428,29 +428,29 @@ a.inline:hover{ border-bottom-color:rgba(46,139,255,.65); }
         <div class="field">
           <label for="bandGHz">Frequency band</label>
           <select id="bandGHz" name="bandGHz" required>
-            <option value="" disabled selected>Select a band‚Ä¶</option>
+            <option value="" disabled selected>Select a band…</option>
           </select>
         </div>
 
         <div class="field">
           <label for="bandwidthMHz">Bandwidth / channel width</label>
           <select id="bandwidthMHz" name="bandwidthMHz" required>
-            <option value="" disabled selected>Select a bandwidth‚Ä¶</option>
+            <option value="" disabled selected>Select a bandwidth…</option>
           </select>
         </div>
 
         <div class="field">
-          <label for="siteA">Site A ‚Äî GPS coordinates</label>
+          <label for="siteA">Site A — GPS coordinates</label>
           <input type="text" id="siteA" name="siteA" placeholder="e.g. -26.2041, 28.0473" required>
         </div>
 
         <div class="field">
-          <label for="siteB">Site B ‚Äî GPS coordinates</label>
+          <label for="siteB">Site B — GPS coordinates</label>
           <input type="text" id="siteB" name="siteB" placeholder="e.g. -25.7479, 28.2293" required>
         </div>
       </div>
       <small style="display:block;margin-top:4px;color:var(--muted);">
-        Decimal degrees, latitude then longitude ‚Äî the format Google Maps shows when you right-click a point and copy the coordinates. Distance and area (metro/rural) are worked out automatically from these.
+        Decimal degrees, latitude then longitude — the format Google Maps shows when you right-click a point and copy the coordinates. Distance and area (metro/rural) are worked out automatically from these.
       </small>
 
       <details class="advanced" style="margin-top:22px;">
@@ -521,7 +521,7 @@ a.inline:hover{ border-bottom-color:rgba(46,139,255,.65); }
       <div>
         <h4>WISP Compliance (Pty) Ltd</h4>
         <p>WISPCOM is a telecommunications compliance specialist serving South African WISPs and licensed network operators.</p>
-        <small class="note" style="display:block;margin-top:10px;color:rgba(156,163,175,.82);font-size:13px;">Regulation ‚Äì Simplified.</small>
+        <small class="note" style="display:block;margin-top:10px;color:rgba(156,163,175,.82);font-size:13px;">Regulation – Simplified.</small>
       </div>
       <div>
         <h4>Contact</h4>
@@ -540,7 +540,7 @@ a.inline:hover{ border-bottom-color:rgba(46,139,255,.65); }
       </div>
     </div>
     <div class="footer-bottom">
-      ¬© 2026 WISP Compliance (Pty) Ltd. All rights reserved. This calculator provides estimates only and does not constitute a firm quote or legal advice.
+      © 2026 WISP Compliance (Pty) Ltd. All rights reserved. This calculator provides estimates only and does not constitute a firm quote or legal advice.
     </div>
   </footer>
 
@@ -556,7 +556,7 @@ BANDS.forEach(function(g){
   bandSelect.appendChild(opt);
 });
 
-// Mirrors lib/pricing.js BANDWIDTH_OPTIONS ‚Äî display only (the fee formula
+// Mirrors lib/pricing.js BANDWIDTH_OPTIONS — display only (the fee formula
 // itself always runs server-side). Keep these two lists in sync.
 const BANDWIDTHS = [
   { mhz: 7, estMbps: 50 },
@@ -571,7 +571,7 @@ const bandwidthSelect = document.getElementById('bandwidthMHz');
 BANDWIDTHS.forEach(function(b){
   const opt = document.createElement('option');
   opt.value = b.mhz;
-  opt.textContent = b.mhz + ' MHz ‚Äî up to ~' + b.estMbps + ' Mbps';
+  opt.textContent = b.mhz + ' MHz — up to ~' + b.estMbps + ' Mbps';
   bandwidthSelect.appendChild(opt);
 });
 
@@ -612,7 +612,7 @@ form.addEventListener('submit', async function(e){
   }
 
   calcBtn.disabled = true;
-  calcBtn.textContent = 'Calculating‚Ä¶';
+  calcBtn.textContent = 'Calculating…';
 
   const areaOverrideValue = document.getElementById('areaOverride').value;
   const payload = {
