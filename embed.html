@@ -445,7 +445,6 @@ function parseCoordInput(value){
 form.addEventListener('submit', async function(e){
   e.preventDefault();
   errorBox.style.display = 'none';
-  result.style.display = 'none';
 
   const siteA = parseCoordInput(document.getElementById('siteA').value);
   const siteB = parseCoordInput(document.getElementById('siteB').value);
@@ -453,6 +452,7 @@ form.addEventListener('submit', async function(e){
   if (!siteA || !siteB) {
     errorBox.textContent = 'Enter GPS coordinates for both sites as "latitude, longitude" (e.g. -26.2041, 28.0473).';
     errorBox.style.display = 'block';
+    result.style.display = 'none';
     return;
   }
 
@@ -482,6 +482,7 @@ form.addEventListener('submit', async function(e){
     if (!res.ok) {
       errorBox.textContent = data.error || 'Something went wrong. Please check your inputs and try again.';
       errorBox.style.display = 'block';
+      result.style.display = 'none';
       return;
     }
 
@@ -519,6 +520,7 @@ form.addEventListener('submit', async function(e){
   } catch (err) {
     errorBox.textContent = 'Could not reach the calculator service. Please try again shortly.';
     errorBox.style.display = 'block';
+    result.style.display = 'none';
   } finally {
     calcBtn.disabled = false;
     calcBtn.textContent = 'Calculate estimated fee';
@@ -527,12 +529,26 @@ form.addEventListener('submit', async function(e){
 
 // Report height to the parent page so it can size the iframe to fit —
 // no fixed-height scrollbar-in-a-box. See /calculator/index.html on the
-// main site for the matching postMessage listener.
+// main site for the matching postMessage listener. Coalesced onto a single
+// animation frame: the ResizeObserver can fire several times in a row while
+// the result box is filled in, and posting a message for each one made the
+// host page resize the iframe mid-gesture — on a slow click that shift was
+// enough to make the click land on nothing (the button moved under the
+// cursor), so calculations would silently not submit.
+let reportHeightScheduled = false;
 function reportHeight(){
   const h = document.documentElement.scrollHeight;
   window.parent.postMessage({ source: 'wispcom-spectrum-calculator', height: h }, '*');
 }
-new ResizeObserver(reportHeight).observe(document.body);
+function scheduleReportHeight(){
+  if (reportHeightScheduled) return;
+  reportHeightScheduled = true;
+  requestAnimationFrame(function(){
+    reportHeightScheduled = false;
+    reportHeight();
+  });
+}
+new ResizeObserver(scheduleReportHeight).observe(document.body);
 window.addEventListener('load', reportHeight);
 </script>
 
