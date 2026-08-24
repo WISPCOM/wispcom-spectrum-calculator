@@ -181,6 +181,45 @@ body{
   background-clip:text;
   -webkit-text-fill-color:transparent;
 }
+.area-mismatch-warning{
+  margin-top:20px;
+  padding:18px 20px;
+  border-radius:14px;
+  background:rgba(245,158,11,.12);
+  border:1px solid rgba(245,158,11,.5);
+  display:none;
+  gap:14px;
+  align-items:flex-start;
+}
+.area-mismatch-warning[data-visible="true"]{ display:flex; }
+.area-mismatch-warning svg{
+  flex:0 0 auto;
+  width:26px;
+  height:26px;
+  color:#F59E0B;
+  margin-top:1px;
+}
+.area-mismatch-warning .body{ flex:1 1 auto; }
+.area-mismatch-warning h4{
+  color:#FCD34D;
+  font-size:15.5px;
+  font-weight:800;
+  margin-bottom:6px;
+}
+.area-mismatch-warning p{
+  color:#FDE68A;
+  font-size:14px;
+  margin:0 0 6px;
+}
+.area-mismatch-warning .cta{
+  margin-top:12px;
+  gap:10px;
+}
+.area-mismatch-warning .btn{
+  padding:10px 18px;
+  font-size:14px;
+  box-shadow:none;
+}
 .result-assumptions{
   margin-top:20px;
   display:grid;
@@ -297,6 +336,19 @@ body{
     <div class="result-label">Estimated Annual ICASA Spectrum Licence Fee</div>
     <div class="result-amount" id="result-amount">R0.00</div>
 
+    <div class="area-mismatch-warning" id="area-mismatch-warning">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      <div class="body">
+        <h4>This link crosses a metro/rural boundary — treat this figure as unreliable</h4>
+        <p id="area-mismatch-text"></p>
+        <p>ICASA's fee formula applies a <strong>flat 10&times; difference</strong> between metro and rural pricing, and only one classification can apply to the actual licence — not a blend of the two. Because Site A and Site B fall on opposite sides of that line, this estimate should <strong>not</strong> be used for budgeting or quoting a customer until WISPCOM confirms which classification applies.</p>
+        <div class="cta">
+          <a class="btn" href="mailto:info@wispcompliance.co.za?subject=WISPCOM%20%E2%80%93%20Spectrum%20Licence%20Fee%20Area%20Classification%20Query" id="mismatch-cta-email" target="_top">Email WISPCOM</a>
+          <a class="btn whatsapp" href="https://wa.me/27769981009?text=Hi%20WISPCOM%2C%20my%20link%27s%20two%20sites%20fall%20in%20different%20ICASA%20area%20classifications%20(metro%2Frural)%20and%20I%20need%20a%20confirmed%20fee%20figure." target="_blank" rel="noopener"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false" style="width:18px;height:18px;"><path fill="currentColor" d="M16.003 3.2c-7.06 0-12.8 5.74-12.8 12.8 0 2.257.59 4.463 1.712 6.408L3.2 28.8l6.57-1.72a12.74 12.74 0 0 0 6.233 1.588h.005c7.06 0 12.8-5.74 12.8-12.8 0-3.42-1.332-6.635-3.75-9.052A12.72 12.72 0 0 0 16.003 3.2Zm0 2.133c2.848 0 5.523 1.11 7.537 3.124a10.62 10.62 0 0 1 3.13 7.543c0 5.884-4.787 10.667-10.673 10.667h-.004a10.6 10.6 0 0 1-5.406-1.48l-.388-.23-4.01 1.05 1.07-3.91-.253-.4a10.56 10.56 0 0 1-1.62-5.63c0-5.884 4.787-10.667 10.667-10.667Zm-5.86 5.744c-.29 0-.762.11-1.16.55-.398.44-1.523 1.49-1.523 3.63s1.56 4.21 1.777 4.5c.218.29 3.07 4.69 7.44 6.57 1.04.45 1.85.72 2.48.92 1.043.33 1.992.284 2.742.172.836-.125 2.573-1.052 2.937-2.068.363-1.016.363-1.887.254-2.069-.11-.18-.398-.29-.836-.51-.437-.218-2.573-1.27-2.972-1.414-.398-.145-.688-.218-.978.219-.29.435-1.123 1.414-1.377 1.703-.254.29-.508.327-.945.11-.437-.22-1.844-.68-3.513-2.168-1.298-1.157-2.175-2.586-2.43-3.023-.253-.436-.027-.672.192-.89.196-.195.437-.508.655-.762.218-.254.29-.436.436-.726.146-.29.073-.545-.036-.762-.11-.218-.955-2.375-1.34-3.252-.353-.848-.712-.733-.978-.746-.253-.011-.543-.014-.834-.014Z"></path></svg>WhatsApp WISPCOM</a>
+        </div>
+      </div>
+    </div>
+
     <div class="result-assumptions" id="result-assumptions"></div>
 
     <div class="estimate-note">
@@ -368,6 +420,12 @@ const result = document.getElementById('result');
 const resultAmount = document.getElementById('result-amount');
 const resultAssumptions = document.getElementById('result-assumptions');
 const calcBtn = document.getElementById('calc-btn');
+const areaMismatchWarning = document.getElementById('area-mismatch-warning');
+const areaMismatchText = document.getElementById('area-mismatch-text');
+
+function areaLabelFor(area, region){
+  return area === 'metro' ? ('Metro' + (region ? ' (' + region + ')' : '')) : 'Rural / everywhere else';
+}
 
 function formatRand(n){
   return 'R' + n.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -429,9 +487,16 @@ form.addEventListener('submit', async function(e){
 
     resultAmount.textContent = formatRand(data.fee) + ' / year';
 
-    const areaLabel = data.assumptions.area === 'metro'
-      ? 'Metro' + (data.assumptions.areaRegion ? ' (' + data.assumptions.areaRegion + ')' : '')
-      : 'Rural / everywhere else';
+    const areaLabel = areaLabelFor(data.assumptions.area, data.assumptions.areaRegion);
+
+    if (data.assumptions.areaMismatch) {
+      const siteALabel = areaLabelFor(data.assumptions.siteAArea, data.assumptions.siteARegion);
+      const siteBLabel = areaLabelFor(data.assumptions.siteBArea, data.assumptions.siteBRegion);
+      areaMismatchText.textContent = 'Site A resolves to ' + siteALabel + ', but Site B resolves to ' + siteBLabel + '.';
+      areaMismatchWarning.setAttribute('data-visible', 'true');
+    } else {
+      areaMismatchWarning.removeAttribute('data-visible');
+    }
 
     const rows = [
       ['Frequency band', payload.bandGHz + ' GHz'],
