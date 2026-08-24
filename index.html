@@ -677,7 +677,6 @@ function parseCoordInput(value){
 form.addEventListener('submit', async function(e){
   e.preventDefault();
   errorBox.style.display = 'none';
-  result.style.display = 'none';
 
   const siteA = parseCoordInput(document.getElementById('siteA').value);
   const siteB = parseCoordInput(document.getElementById('siteB').value);
@@ -685,6 +684,7 @@ form.addEventListener('submit', async function(e){
   if (!siteA || !siteB) {
     errorBox.textContent = 'Enter GPS coordinates for both sites as "latitude, longitude" (e.g. -26.2041, 28.0473).';
     errorBox.style.display = 'block';
+    result.style.display = 'none';
     return;
   }
 
@@ -714,6 +714,7 @@ form.addEventListener('submit', async function(e){
     if (!res.ok) {
       errorBox.textContent = data.error || 'Something went wrong. Please check your inputs and try again.';
       errorBox.style.display = 'block';
+      result.style.display = 'none';
       return;
     }
 
@@ -752,6 +753,7 @@ form.addEventListener('submit', async function(e){
   } catch (err) {
     errorBox.textContent = 'Could not reach the calculator service. Please try again shortly.';
     errorBox.style.display = 'block';
+    result.style.display = 'none';
   } finally {
     calcBtn.disabled = false;
     calcBtn.textContent = 'Calculate estimated fee';
