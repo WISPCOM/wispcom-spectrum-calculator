@@ -535,9 +535,31 @@ form.addEventListener('submit', async function(e){
 // host page resize the iframe mid-gesture — on a slow click that shift was
 // enough to make the click land on nothing (the button moved under the
 // cursor), so calculations would silently not submit.
+//
+// measureHeight() takes the max of several metrics rather than just
+// document.documentElement.scrollHeight: when this page is framed (as
+// opposed to loaded standalone), that single metric has been observed to
+// read back as 0 on the very first ResizeObserver firing — before the
+// frame's own layout has fully settled — which collapses the host's
+// iframe to its unstyled default height and hides the whole calculator
+// below the fold. reportHeight() also refuses to report anything under
+// MIN_PLAUSIBLE_HEIGHT (the panel's own padding and heading alone are
+// already well past this), so that bogus early reading can never reach
+// the host — while still allowing genuine shrinks (closing the advanced
+// options accordion, a mismatch warning going away) to report normally.
+const MIN_PLAUSIBLE_HEIGHT = 100;
 let reportHeightScheduled = false;
+function measureHeight(){
+  return Math.max(
+    document.documentElement.scrollHeight,
+    document.body.scrollHeight,
+    document.documentElement.offsetHeight,
+    document.body.offsetHeight
+  );
+}
 function reportHeight(){
-  const h = document.documentElement.scrollHeight;
+  const h = measureHeight();
+  if (h < MIN_PLAUSIBLE_HEIGHT) return;
   window.parent.postMessage({ source: 'wispcom-spectrum-calculator', height: h }, '*');
 }
 function scheduleReportHeight(){
@@ -549,7 +571,14 @@ function scheduleReportHeight(){
   });
 }
 new ResizeObserver(scheduleReportHeight).observe(document.body);
-window.addEventListener('load', reportHeight);
+window.addEventListener('load', function(){
+  // A few retries shortly after load in case the first measurement in this
+  // frame landed before layout settled — cheap insurance against the 0px
+  // reading described above.
+  reportHeight();
+  setTimeout(reportHeight, 50);
+  setTimeout(reportHeight, 300);
+});
 </script>
 
 </body>
