@@ -572,12 +572,16 @@ function scheduleReportHeight(){
 }
 new ResizeObserver(scheduleReportHeight).observe(document.body);
 window.addEventListener('load', function(){
-  // A few retries shortly after load in case the first measurement in this
-  // frame landed before layout settled — cheap insurance against the 0px
-  // reading described above.
-  reportHeight();
-  setTimeout(reportHeight, 50);
-  setTimeout(reportHeight, 300);
+  // Retries at widening intervals after load: confirmed in testing that
+  // layout in this framed context can legitimately take longer than a few
+  // hundred ms to settle (observed the correct height only arriving several
+  // seconds in, well after the earlier 50ms/300ms retries had already come
+  // back with 0 and been dropped by the MIN_PLAUSIBLE_HEIGHT gate above).
+  // Spread out to 3s of coverage so a real value is very unlikely to be
+  // missed, while staying invisible to the user either way.
+  [0, 50, 150, 300, 600, 1000, 1800, 3000].forEach(function(ms){
+    setTimeout(reportHeight, ms);
+  });
 });
 </script>
 
